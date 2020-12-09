@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ArtifactConfig">
+    <output-path>$PROJECT_DIR$/out/artifacts/ArtifactConfig</output-path>
+    <root id="archive" name="ArtifactConfig.jar">
+      <element id="archive" name="SymulatorEwolucyjny.jar">
+        <element id="module-output" name="SymulatorEwolucyjny" />
+      </element>
+    </root>
+  </artifact>
+</component>
