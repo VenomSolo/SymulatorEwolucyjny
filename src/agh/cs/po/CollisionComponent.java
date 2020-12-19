@@ -6,10 +6,12 @@ public class CollisionComponent extends Component{
     private HashMap<ColliderType, CollisionType> collisionMap;
     private ColliderType colliderType;
 
-    public CollisionComponent(ColliderType collider)
+    public CollisionComponent(Scene scene, ColliderType collider)
     {
-        super();
+        super(scene);
+        this.collisionMap = new HashMap<>();
         this.colliderType = collider;
+        this.setName("Collider");
     }
 
     private void InitializeCollisionMap()
@@ -44,7 +46,8 @@ public class CollisionComponent extends Component{
 
     public CollisionType CheckCollisionWith(CollisionComponent other)
     {
-        return collisionMap.get(other.getColliderType());
+        if(collisionMap.containsKey(other.getColliderType())) return collisionMap.get(other.getColliderType());
+        else return CollisionType.NONE;
     }
 
     @Override

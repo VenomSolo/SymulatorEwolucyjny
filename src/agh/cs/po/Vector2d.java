@@ -17,41 +17,41 @@ public class Vector2d{
         return "(" + Integer.toString(x) + ", " + Integer.toString(y) + ")";
     }
 
-    boolean precedes(Vector2d other)
+    public boolean precedes(Vector2d other)
     {
         return(this.x <= other.x && this.y <= other.y);
     }
 
-    boolean follows(Vector2d other)
+    public boolean follows(Vector2d other)
     {
         return(this.x >= other.x && this.y >= other.y);
     }
 
-    Vector2d upperRight(Vector2d other)
+    public Vector2d upperRight(Vector2d other)
     {
-        int x = this.x >= other.x ? this.x : other.x;
-        int y = this.y >= other.y ? this.y : other.y;
+        int x = Math.max(this.x, other.x);
+        int y = Math.max(this.y, other.y);
         return new Vector2d(x,y);
     }
 
-    Vector2d lowerLeft(Vector2d other)
+    public Vector2d lowerLeft(Vector2d other)
     {
-        int x = this.x <= other.x ? this.x : other.x;
-        int y = this.y <= other.y ? this.y : other.y;
+        int x = Math.min(this.x, other.x);
+        int y = Math.min(this.y, other.y);
         return new Vector2d(x,y);
     }
 
-    Vector2d add(Vector2d other)
+    public Vector2d add(Vector2d other)
     {
         return new Vector2d(this.x + other.x,this.y + other.y);
     }
 
-    Vector2d subtract(Vector2d other)
+    public Vector2d subtract(Vector2d other)
     {
         return new Vector2d(this.x - other.x,this.y - other.y);
     }
 
-    Vector2d scale(float scalar)
+    public Vector2d scale(float scalar)
     {
         return new Vector2d((int)(floor(this.x*scalar)),(int)(floor(this.y*scalar)));
     }

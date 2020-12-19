@@ -7,17 +7,18 @@ public abstract class MapObject extends AbstractObject{
     protected CollisionComponent collisionComponent;
     protected Vector2d position;
     private Map map;
-    private int layer;
+    protected int layer;
 
 
-    public MapObject(Vector2d spawnPosition, Map assignedMap, int defaultLayer)
+    public MapObject(Scene scene, Vector2d spawnPosition, Map assignedMap, int defaultLayer)
     {
+        super(scene);
         this.map = assignedMap;
         if(map.BoundCheck(spawnPosition)) this.position = spawnPosition;
         else this.position = new Vector2d(0,0);
         this.layer = defaultLayer;
-        this.spriteComponent = new SpriteComponent(null);
-        this.collisionComponent = new CollisionComponent(ColliderType.NOTHING);
+        this.spriteComponent = new SpriteComponent(scene,null);
+        this.collisionComponent = new CollisionComponent(scene, ColliderType.NOTHING);
     }
 
     final public Vector2d getPosition() {

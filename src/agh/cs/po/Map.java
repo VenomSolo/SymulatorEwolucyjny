@@ -3,24 +3,23 @@ package agh.cs.po;
 import agh.cs.projekt1.Animal;
 import agh.cs.projekt1.Grass;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.*;
 
 public class Map {
     private final Vector2d lBound = new Vector2d(0,0);
     private Vector2d hBound;
-    private Vector2d jungleLBound;
-    private Vector2d jungleHBound;
+    private Scene scene;
     private boolean foldable;
-    private HashMap<Vector2d, SortedSet<Animal>> animals;
-    private HashMap<Vector2d, Grass> grass;
-    private HashMap<Vector2d, TreeSet<MapObject>> objects;
+    protected HashMap<Vector2d, TreeSet<MapObject>> objects;
 
-    public Map(Vector2d bounds, float jungleRatio, boolean foldable)
+    public Map(Vector2d bounds, boolean foldable, Scene scene)
     {
         this.hBound = bounds;
-        this.jungleLBound = bounds.scale(jungleRatio);
-        this.jungleHBound = bounds.scale(1.0f-jungleRatio);
         this.foldable = foldable;
+        this.scene = scene;
+        this.objects = new HashMap<>();
     }
 
     public boolean AddObject(MapObject object)
@@ -28,11 +27,20 @@ public class Map {
         return AddObjectAt(object, object.getPosition());
     }
 
-    public boolean AddObjectAt(MapObject object, Vector2d position)
+    private boolean AddObjectAt(MapObject object, Vector2d position)
     {
         if (object == null) return false;
+        object.scene =  this.scene;
         if (!objects.containsKey(position)) {
-            objects.put(position, new TreeSet<MapObject>(Comparator.comparingInt(MapObject::getLayer)));
+            objects.put(position, new TreeSet<MapObject>(
+                    new Comparator<MapObject>() {
+                        @Override
+                        public int compare(MapObject o1, MapObject o2) {
+                            if(o1.equals(o2)) return 0;
+                            if(o1.getLayer() < o2.getLayer()) return -1;
+                            else return 1;
+                        }
+                    })); //Comparator.comparingInt(MapObject::getLayer)));
         }
         objects.get(position).add(object);
         return true;
@@ -42,13 +50,13 @@ public class Map {
     {
         if (object == null) return false;
         Vector2d position = object.getPosition();
-        if (!objects.containsKey(position) && object.getMap() == this) {
+        if (objects.containsKey(position) && object.getMap() == this) {
             objects.get(position).remove(object);
             if (objects.get(position).size() == 0){
                 objects.remove(position,objects.get(position));
             }
         }
-        objects.get(position).add(object);
+        else return false;
         return true;
     }
 
@@ -82,17 +90,17 @@ public class Map {
         return objects;
     }
 
-    public Vector2d UpdateObjectPosition(MapObject sender, Vector2d newPosition)
+    public Vector2d UpdateObjectPosition(DynamicObject sender, Vector2d newPosition)
     {
         Vector2d currentPosition = sender.getPosition();
         if(foldable)
         {
             if(!BoundCheck(newPosition))
             {
-                if(newPosition.x > hBound.x) newPosition = newPosition.add(new Vector2d(-hBound.x,0));
-                else if(newPosition.x < lBound.x) newPosition = newPosition.add(new Vector2d(hBound.x,0));
-                if(newPosition.y > hBound.y) newPosition = newPosition.add(new Vector2d(0,-hBound.y));
-                else if(newPosition.y < lBound.y) newPosition = newPosition.add(new Vector2d(0,-hBound.y));
+                if(newPosition.x > hBound.x) newPosition = new Vector2d(lBound.x + newPosition.x % hBound.x - 1, newPosition.y); //newPosition.add(new Vector2d(-hBound.x,0));
+                else if(newPosition.x < lBound.x) newPosition = new Vector2d(hBound.x - (-newPosition.x) % hBound.x + 1, newPosition.y); //newPosition.add(new Vector2d(hBound.x,0));
+                if(newPosition.y > hBound.y) newPosition = new Vector2d(newPosition.x, lBound.y + newPosition.y % hBound.y - 1); //newPosition.add(new Vector2d(0,-hBound.y));
+                else if(newPosition.y < lBound.y) newPosition = new Vector2d(newPosition.x, hBound.y - (-newPosition.y) % hBound.y + 1); //newPosition.add(new Vector2d(0,-hBound.y));
             }
 
         }
@@ -113,26 +121,29 @@ public class Map {
                     case BLOCK ->
                             {
                                 sender.OnHit(obj);
-                                obj.OnHit(sender);
+                                if (obj.getCollisionComponent().CheckCollisionWith(sender.getCollisionComponent())
+                                        == CollisionType.BLOCK) obj.OnHit(sender);
                                 return currentPosition;
                             }
                     case OVERLAP ->
                             {
                                 sender.OnOverlap(obj);
-                                obj.OnOverlap(sender);
+                                if (obj.getCollisionComponent().CheckCollisionWith(sender.getCollisionComponent())
+                                        == CollisionType.OVERLAP) obj.OnOverlap(sender);
                             }
                 }
             }
-            objects.get(newPosition).add(sender);
+            //objects.get(newPosition).add(sender);
         }
-        AddObjectAt(sender, newPosition);
         RemoveObject(sender);
+        sender.setPosition(newPosition);
+        AddObject(sender);
         return newPosition;
     }
 
     public boolean BoundCheck(Vector2d toCheck)
     {
-        if (toCheck.upperRight(hBound) == hBound && toCheck.lowerLeft(lBound) == lBound)
+        if (toCheck.upperRight(hBound).equals(hBound) && toCheck.lowerLeft(lBound).equals(lBound))
         {
             return true;
         }

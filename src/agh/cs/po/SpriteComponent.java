@@ -4,16 +4,26 @@ import java.io.File;
 
 public class SpriteComponent extends Component{
     private String sourceFile;
+    private String color;
 
-    public SpriteComponent(String sourceFile)
+    public SpriteComponent(Scene scene, String sourceFile)
     {
-        super();
+        super(scene);
         this.sourceFile = sourceFile;
+        this.setName("Sprite");
     }
 
     public String getSourceFile()
     {
         return sourceFile;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 
     public boolean ChangeSource(String path)

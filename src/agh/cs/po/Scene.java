@@ -8,11 +8,10 @@ public abstract class Scene extends Thread implements ICanTick{
     private HashMap<String, ArrayList<AbstractObject>> register;
     private boolean bAllowTick;
 
-    public Scene(Map map, boolean bAllowTick)
+    public Scene(boolean bAllowTick)
     {
         register = new HashMap<>();
         maps = new ArrayList<>();
-        maps.add(map);
         this.bAllowTick = bAllowTick;
     }
 
@@ -49,5 +48,18 @@ public abstract class Scene extends Thread implements ICanTick{
     }
 
     @Override
-    abstract public void Tick();
+    public void Tick()
+    {
+        for(AbstractObject obj : GetRegisteredObjects("Tickable"))
+        {
+            //System.out.println(obj.getName());
+            obj.Tick();
+        }
+    }
+
+    @Override
+    final public void ToggleTick()
+    {
+        bAllowTick = bAllowTick ? false : true;
+    }
 }

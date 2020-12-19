@@ -6,8 +6,10 @@ import java.util.HashMap;
 public abstract class Controller extends EtherObject{
     private ArrayList<Pawn> possessedPawns;
 
-    public Controller()
+    public Controller(Scene scene)
     {
+        super(scene);
+        scene.Register("AnimalController", this);
         possessedPawns = new ArrayList<Pawn>();
     }
 

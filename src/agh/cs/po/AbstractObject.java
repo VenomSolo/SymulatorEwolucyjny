@@ -1,12 +1,22 @@
 package agh.cs.po;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public abstract class AbstractObject implements ICanTick{
-    private Scene scene;
+    public Scene scene;
     private ArrayList<String> tags;
     private String name;
+    private static int id = 0;
     private boolean bAllowTick = false;
+
+    public AbstractObject(Scene scene)
+    {
+        this.name = "Object" + id++;
+        this.tags = new ArrayList<>();
+        this.scene = scene;
+        scene.Register("Tickable", this);
+    }
 
     final public void AddTag(String tag)
     {
@@ -27,7 +37,7 @@ public abstract class AbstractObject implements ICanTick{
         return bAllowTick;
     }
 
-    final protected void ToggleTick()
+    final public void ToggleTick()
     {
         bAllowTick = bAllowTick ? false : true;
     }
@@ -45,4 +55,23 @@ public abstract class AbstractObject implements ICanTick{
     public abstract void Tick();
 
     public abstract void Destroy();
+
+    @Override
+    final public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        AbstractObject other = (AbstractObject) obj;
+        return (this.name.equals(other.name));
+    }
+
+    @Override
+    final public int hashCode()
+    {
+        return Objects.hash(name);
+    }
 }

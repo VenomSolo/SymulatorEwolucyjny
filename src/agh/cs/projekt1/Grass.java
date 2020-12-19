@@ -1,16 +1,17 @@
 package agh.cs.projekt1;
 
-import agh.cs.po.Map;
-import agh.cs.po.MapObject;
-import agh.cs.po.Vector2d;
+import agh.cs.po.*;
 
 public class Grass extends MapObject {
-    private int energy;
+    static int energy = 5;
 
-    public Grass(Vector2d spawnPosition, Map assignedMap, int defaultLayer, int energy)
+    public Grass(Scene scene, Vector2d spawnPosition, Map assignedMap, int defaultLayer, int energy)
     {
-        super(spawnPosition, assignedMap, defaultLayer);
-        this.energy = energy;
+        super(scene, spawnPosition, assignedMap, defaultLayer);
+        //this.energy = energy;
+        this.getSpriteComponent().setColor("#32a836");
+        getCollisionComponent().setColliderType(ColliderType.STATIC);
+        getCollisionComponent().SetCollisionWith(ColliderType.DYNAMIC, CollisionType.OVERLAP);
     }
 
     public int getEnergy() {
@@ -24,7 +25,10 @@ public class Grass extends MapObject {
 
     @Override
     protected void OnOverlap(MapObject other) {
-
+        if(other instanceof Animal)
+        {
+            ((SimulationMap) getMap()).QueryToEat(this);
+        }
     }
 
     @Override

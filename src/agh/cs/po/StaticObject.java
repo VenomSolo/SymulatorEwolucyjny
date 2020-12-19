@@ -3,9 +3,9 @@ package agh.cs.po;
 public abstract  class StaticObject extends MapObject{
     private Vector2d staticPosition;
 
-    public StaticObject(Vector2d spawnPosition, Map assignedMap, int defaultLayer)
+    public StaticObject(Scene scene, Vector2d spawnPosition, Map assignedMap, int defaultLayer)
     {
-        super(spawnPosition,assignedMap,defaultLayer);
+        super(scene, spawnPosition,assignedMap,defaultLayer);
         staticPosition = spawnPosition;
     }
 

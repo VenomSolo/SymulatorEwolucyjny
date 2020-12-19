@@ -3,6 +3,7 @@ package agh.cs.projekt1;
 import agh.cs.po.Controller;
 import agh.cs.po.MapDirection;
 import agh.cs.po.Pawn;
+import agh.cs.po.Scene;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -14,8 +15,10 @@ public class Genom extends Controller {
     protected int[] genes;
     protected int[] occurences;
 
-    public Genom(int[] startGenes)
+    public Genom(Scene scene, int[] startGenes)
     {
+        super(scene);
+        this.setName("Genes");
         genes = startGenes;
         occurences = new int[((int) Arrays.stream(startGenes).distinct().count())];
         for(int i = 0; i < genes.length; i++)
@@ -68,7 +71,7 @@ public class Genom extends Controller {
                 else otherCounter++;
             }
         }
-        Genom newGenom = new Genom(newGenes.sorted().toArray());
+        Genom newGenom = new Genom(scene, newGenes.sorted().toArray());
         newGenom.FixGenes();
         return newGenom;
     }
