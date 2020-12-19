@@ -1,7 +1,5 @@
 package agh.cs.po;
 
-import java.util.ArrayList;
-
 public abstract class MapObject extends AbstractObject{
     protected SpriteComponent spriteComponent;
     protected CollisionComponent collisionComponent;
@@ -42,8 +40,8 @@ public abstract class MapObject extends AbstractObject{
         return collisionComponent;
     }
 
-    protected abstract void OnHit(MapObject other);
-    protected abstract void OnOverlap(MapObject other);
+    protected abstract void OnHit(CollisionInfo info);
+    protected abstract void OnOverlap(CollisionInfo info);
 
     @Override
     public void Destroy()

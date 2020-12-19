@@ -32,6 +32,14 @@ public abstract class Scene extends Thread implements ICanTick{
         }
     }
 
+    public void Unregister(String category, AbstractObject object)
+    {
+        if(register.containsKey(category))
+        {
+            register.get(category).remove(object);
+        }
+    }
+
     public ArrayList<AbstractObject> GetRegisteredObjects(String category)
     {
         return register.get(category);

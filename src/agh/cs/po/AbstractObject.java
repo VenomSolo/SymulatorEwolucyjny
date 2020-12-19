@@ -42,6 +42,10 @@ public abstract class AbstractObject implements ICanTick{
         bAllowTick = bAllowTick ? false : true;
     }
 
+    final public void TurnOffTick() {bAllowTick = false;}
+
+    final public void TurnOnTick() {bAllowTick = true;}
+
     final protected void setName(String name)
     {
         this.name = name;

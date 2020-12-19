@@ -5,6 +5,7 @@ import agh.cs.po.MapDirection;
 import agh.cs.po.Pawn;
 import agh.cs.po.Scene;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -15,63 +16,108 @@ public class Genom extends Controller {
     protected int[] genes;
     protected int[] occurences;
 
+    public Genom(Scene scene, int limiter)
+    {
+        this(scene, (ThreadLocalRandom.current().ints(0, 7)
+                .limit(limiter)).toArray());
+    }
+
     public Genom(Scene scene, int[] startGenes)
     {
         super(scene);
         this.setName("Genes");
         genes = startGenes;
-        occurences = new int[((int) Arrays.stream(startGenes).distinct().count())];
+        occurences = new int[8];
         for(int i = 0; i < genes.length; i++)
         {
             occurences[genes[i]]++;
         }
         FixGenes();
+        //System.out.println();
     }
 
     public int ChooseRandomGene()
     {
         int chosenGene = rand.nextInt(genes.length);
+        //System.out.println(chosenGene);
         for(int i = 0, sum = 0; i < occurences.length; i++)
         {
             sum+=occurences[i];
             if(sum>=chosenGene) return i;
         }
         return 0;
+
     }
 
     public Genom CombineGenes(Genom other)
     {
-        IntStream newGenes = IntStream.builder().build();
+        //IntStream newGenes = IntStream.builder().build();
         int splitPointCount = 3;
         int thisCounter = 0;
         int otherCounter = 0;
-        IntStream splitPoints = IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
-                distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted();
-        for(int i = 0; i < splitPoints.count(); i++)
+        //IntStream splitPoints = IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
+        //        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted();
+        /*
+        for(int i = 0; i < IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
+                distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().count(); i++)
         {
             if(thisCounter == 2)
             {
                 newGenes = IntStream.concat(newGenes,
                         Arrays.stream(Arrays.copyOfRange(other.genes
-                                ,splitPoints.toArray()[i],splitPoints.toArray()[i+1])));
+                                ,IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
+                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i],IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
+                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i+1])));
             }
             else if(otherCounter == 2)
             {
                 newGenes = IntStream.concat(newGenes,
                         Arrays.stream(Arrays.copyOfRange(this.genes
-                                ,splitPoints.toArray()[i],splitPoints.toArray()[i+1])));
+                                ,IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
+                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i],IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
+                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i+1])));
             }
-            else
+            else if(i < 3)
             {
+                System.out.println("i: " + i);
                 boolean pickThis = rand.nextBoolean();
                 newGenes = IntStream.concat(newGenes,
                         Arrays.stream(Arrays.copyOfRange((pickThis ? this.genes : other.genes)
-                                ,splitPoints.toArray()[i],splitPoints.toArray()[i+1])));
+                                ,IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
+                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i],IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
+                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i+1])));
+                if(pickThis) thisCounter++;
+                else otherCounter++;
+            }
+        }*/
+        int [] newGenes = new int[0];
+        int[] splitPoints = IntStream.concat(ThreadLocalRandom.current().ints(1, genes.length).
+                       distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length})).sorted().toArray();
+        for(int i = 0; i < splitPoints.length-1; i++)
+        {
+            System.out.println("From: " + splitPoints[i] + " To: " + splitPoints[i+1] + " Genes length: " + other.genes.length);
+            if(thisCounter == 2)
+            {
+               newGenes = IntStream.concat(Arrays.stream(newGenes), Arrays.stream(
+                       Arrays.copyOfRange(other.genes, splitPoints[i], splitPoints[i+1]))).toArray();
+            }
+            else if(otherCounter == 2)
+            {
+                newGenes = IntStream.concat(Arrays.stream(newGenes), Arrays.stream(
+                        Arrays.copyOfRange(this.genes, splitPoints[i], splitPoints[i+1]))).toArray();
+            }
+            else if(i < 3)
+            {
+                //System.out.println("i: " + i);
+                boolean pickThis = rand.nextBoolean();
+                newGenes = IntStream.concat(Arrays.stream(newGenes), Arrays.stream(
+                        Arrays.copyOfRange(pickThis? this.genes : other.genes, splitPoints[i], splitPoints[i+1]))).toArray();
                 if(pickThis) thisCounter++;
                 else otherCounter++;
             }
         }
-        Genom newGenom = new Genom(scene, newGenes.sorted().toArray());
+
+        Genom newGenom = new Genom(scene, Arrays.stream(newGenes).sorted().toArray());
         newGenom.FixGenes();
         return newGenom;
     }
@@ -79,6 +125,7 @@ public class Genom extends Controller {
     private void FixGenes()
     {
         boolean errorFixed = false;
+        System.out.println("Before fix: " + genes.length);
         for(MapDirection dir : MapDirection.values())
         {
             if (!Arrays.stream(genes).distinct().anyMatch(i -> i== dir.ordinal()))
@@ -87,8 +134,10 @@ public class Genom extends Controller {
                 errorFixed = true;
             }
         }
+
         if (errorFixed) FixGenes();
         else genes = Arrays.stream(genes).sorted().toArray();
+        System.out.println("After fix: " + genes.length);
     }
 
     public void Rotate(Animal animal)
@@ -126,6 +175,7 @@ public class Genom extends Controller {
 
     @Override
     public void Destroy() {
-
+        super.Destroy();
+        //scene.Unregister("AnimalController", this);
     }
 }

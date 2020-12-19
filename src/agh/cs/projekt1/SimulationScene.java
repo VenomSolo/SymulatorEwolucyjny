@@ -10,19 +10,33 @@ import java.util.ArrayList;
 
 public class SimulationScene extends SingleScene {
     public Statistics stats;
+    public int startEnergy = 20;
     
     public SimulationScene(boolean bAllowTick, Grid[] grids) {
         super(bAllowTick);
         setInstance(this);
-        AddMap(new SimulationMap(new Vector2d(19,19), 0.2f, true, this, grids[0]));
-        SimulationMap map1 = (SimulationMap) getMaps().get(0);
+        for(Grid grid : grids)
+        {
+            AddMap(new SimulationMap(new Vector2d(grid.getN()-1,grid.getN()-1), 0.7f, true, this, grid));
+        }
+        for(Map map : getMaps())
+        {
+            SimulationMap simMap = (SimulationMap) map;
+            for(int i = 0; i < 50; i++)
+            {
+                map.AddObject(new Animal(this, new Vector2d(9,9),
+                        map, 1, new Genom(this, 32)));
+            }
+        }
+
+/*
         Animal a1 = new Animal(this, new Vector2d(8,8),
                 map1, 1, new Genom(this, new int[]{0,1,1,1,1,1,1,1,1,2,3,4,5,6,6,7}));
         map1.AddObject(a1);
 
         map1.AddObject(new Animal(this, new Vector2d(9,9),
                 map1, 1, new Genom(this, new int[]{0,1,1,1,1,1,1,1,1,2,3,4,5,6,7,7})));
-
+*/
 
     }
 
@@ -53,7 +67,7 @@ public class SimulationScene extends SingleScene {
             try
             {
                 Tick();
-                this.sleep(500);
+                this.sleep(17);
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -69,6 +83,8 @@ public class SimulationScene extends SingleScene {
         ClearCorpses();
         RotateAndMove();
         Feed();
+        Mate();
+        SpawnGrass();
         stats.setI(stats.getI()+1);
         System.out.println(stats.getI() + " Tick");
         Platform.runLater(new Runnable() {
@@ -83,6 +99,7 @@ public class SimulationScene extends SingleScene {
     public void ClearCorpses() {
         for(Map map : getMaps())
         {
+            System.out.println("Animals: " + map.GetAllWithTag("Animal").size());
             ArrayList<MapObject> dead = map.GetAllWithTag("dead");
             for (MapObject obj : dead)
             {
@@ -93,6 +110,7 @@ public class SimulationScene extends SingleScene {
 
     public void RotateAndMove() {
         ArrayList<AbstractObject> controllers = GetRegisteredObjects("AnimalController");
+        System.out.println("Controllers: " + controllers.size());
         for(AbstractObject controller : controllers)
         {
             Genom animalController = (Genom)controller;
@@ -105,6 +123,26 @@ public class SimulationScene extends SingleScene {
         for(Map map : getMaps())
         {
             ((SimulationMap)map).ExecuteEatingQuery();
+        }
+    }
+
+    public void Mate()
+    {
+        for(Map map : getMaps())
+        {
+            ((SimulationMap)map).ExecuteMatingQuery();
+        }
+    }
+
+    public void SpawnGrass()
+    {
+        for(Map map : getMaps())
+        {
+            SimulationMap simMap = (SimulationMap)map;
+            simMap.AddObject(new Grass(this, Vector2d.RandomVectorInBounds(
+                    simMap.jungleLBound, simMap.jungleHBound), simMap, -1, 1));
+            simMap.AddObject(new Grass(this, Vector2d.RandomVectorInBounds(
+                    simMap.lBound, simMap.hBound), simMap, -1, 1));
         }
     }
 }

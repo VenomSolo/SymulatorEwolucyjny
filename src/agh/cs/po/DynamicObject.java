@@ -31,6 +31,7 @@ public abstract class DynamicObject extends MapObject{
 
     final public void Move(Vector2d diff)
     {
+        this.BeforeMove(diff);
         this.position = getMap().UpdateObjectPosition(this, this.position.add(diff));
         this.OnMove(diff);
     }
@@ -39,8 +40,13 @@ public abstract class DynamicObject extends MapObject{
 
     abstract protected void OnRotate(int degree);
 
+    abstract protected void BeforeMove(Vector2d diff);
+
+    abstract protected void BeforeRotate(int degree);
+
     final public void Rotate(int degree)
     {
+        this.BeforeRotate(degree);
         for (int i = 0; i < degree%(MapDirection.values().length); i++) {
             orientation = orientation.next();
         }

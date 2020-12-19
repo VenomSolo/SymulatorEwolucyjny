@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.*;
 
 public class Map {
-    private final Vector2d lBound = new Vector2d(0,0);
-    private Vector2d hBound;
+    public final Vector2d lBound = new Vector2d(0,0);
+    public final Vector2d hBound;
     private Scene scene;
     private boolean foldable;
-    protected HashMap<Vector2d, TreeSet<MapObject>> objects;
+    protected HashMap<Vector2d, HashMap<Integer, ArrayList<MapObject>>> objects;
 
     public Map(Vector2d bounds, boolean foldable, Scene scene)
     {
@@ -32,17 +32,13 @@ public class Map {
         if (object == null) return false;
         object.scene =  this.scene;
         if (!objects.containsKey(position)) {
-            objects.put(position, new TreeSet<MapObject>(
-                    new Comparator<MapObject>() {
-                        @Override
-                        public int compare(MapObject o1, MapObject o2) {
-                            if(o1.equals(o2)) return 0;
-                            if(o1.getLayer() < o2.getLayer()) return -1;
-                            else return 1;
-                        }
-                    })); //Comparator.comparingInt(MapObject::getLayer)));
+            objects.put(position, new HashMap<>());
         }
-        objects.get(position).add(object);
+        if(!objects.get(position).containsKey(object.getLayer()))
+        {
+            objects.get(position).put(object.getLayer(), new ArrayList());
+        }
+        objects.get(position).get(object.getLayer()).add(object);
         return true;
     }
 
@@ -50,14 +46,27 @@ public class Map {
     {
         if (object == null) return false;
         Vector2d position = object.getPosition();
-        if (objects.containsKey(position) && object.getMap() == this) {
-            objects.get(position).remove(object);
-            if (objects.get(position).size() == 0){
-                objects.remove(position,objects.get(position));
+        if (objects.containsKey(position) && object.getMap().equals(this))
+        {
+            var posMap = objects.get(position);
+            if(posMap.containsKey(object.layer))
+            {
+                var layerMap = posMap.get(object.layer);
+                if(layerMap.contains(object))
+                {
+                    layerMap.remove(object);
+                    if (layerMap.size() == 0){
+                        posMap.remove(object.layer);
+                        if(posMap.keySet().size() == 0)
+                        {
+                            objects.remove(position);
+                        }
+                    }
+                    return true;
+                }
             }
         }
-        else return false;
-        return true;
+        return false;
     }
 
     public boolean IsEmpty(Vector2d position)
@@ -65,29 +74,41 @@ public class Map {
         return this.objects.get(position).isEmpty();
     }
 
-    public TreeSet<MapObject> ObjectsAt(Vector2d position)
+    public ArrayList<MapObject> ObjectsAt(Vector2d position)
     {
-        return this.objects.get(position);
+        ArrayList ret = new ArrayList();
+        for(ArrayList list : this.objects.get(position).values())
+        {
+            for(Object object : list)
+            {
+                ret.add(object);
+            }
+        }
+        return ret;
     }
 
     public MapObject ObjectAtTop(Vector2d position)
     {
-        return ObjectsAt(position).last();
+        ArrayList<MapObject> list = ObjectsAt(position);
+        list.sort(Comparator.comparingInt(MapObject::getLayer));
+        if(list.size() == 0) return null;
+        return (MapObject) list.get(list.size()-1);
     }
 
     public ArrayList<MapObject> GetAllWithTag(String searchTag)
     {
-        ArrayList<MapObject> objects = new ArrayList<>();
-
-        for(java.util.Map.Entry<Vector2d, TreeSet<MapObject>> entry : this.objects.entrySet())
+        ArrayList<MapObject> ret = new ArrayList<>();
+        for(HashMap<Integer, ArrayList<MapObject>> map : objects.values())
         {
-            for(MapObject obj : entry.getValue()) {
-                if (obj.getTags().contains(searchTag)) {
-                    objects.add(obj);
+            for(ArrayList<MapObject> list : map.values())
+            {
+                for(MapObject object : list)
+                {
+                    if(object.getTags().contains(searchTag)) ret.add(object);
                 }
             }
         }
-        return objects;
+        return ret;
     }
 
     public Vector2d UpdateObjectPosition(DynamicObject sender, Vector2d newPosition)
@@ -120,16 +141,16 @@ public class Map {
                 {
                     case BLOCK ->
                             {
-                                sender.OnHit(obj);
+                                sender.OnHit(new CollisionInfo(obj, newPosition));
                                 if (obj.getCollisionComponent().CheckCollisionWith(sender.getCollisionComponent())
-                                        == CollisionType.BLOCK) obj.OnHit(sender);
+                                        == CollisionType.BLOCK) obj.OnHit(new CollisionInfo(sender, newPosition));
                                 return currentPosition;
                             }
                     case OVERLAP ->
                             {
-                                sender.OnOverlap(obj);
+                                sender.OnOverlap(new CollisionInfo(obj, newPosition));
                                 if (obj.getCollisionComponent().CheckCollisionWith(sender.getCollisionComponent())
-                                        == CollisionType.OVERLAP) obj.OnOverlap(sender);
+                                        == CollisionType.OVERLAP) obj.OnOverlap(new CollisionInfo(sender, newPosition));
                             }
                 }
             }

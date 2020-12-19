@@ -1,6 +1,7 @@
 package agh.cs.po;
 
 import java.util.Objects;
+import java.util.Random;
 
 import static java.lang.StrictMath.floor;
 
@@ -71,6 +72,13 @@ public class Vector2d{
     public Vector2d opposite()
     {
         return new Vector2d(-this.x ,-this.y);
+    }
+
+    public static Vector2d RandomVectorInBounds(Vector2d lBound, Vector2d hBound)
+    {
+        Random rand = new Random();
+        return new Vector2d(rand.nextInt(hBound.x-lBound.x+1)+lBound.x,
+                rand.nextInt(hBound.y-lBound.y+1)+lBound.y);
     }
 
     @Override

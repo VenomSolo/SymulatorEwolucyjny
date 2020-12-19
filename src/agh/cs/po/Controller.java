@@ -25,6 +25,10 @@ public abstract class Controller extends EtherObject{
         possessedPawns.remove(pawn);
         pawn.setController(null);
         OnUnpossess(pawn);
+        if(possessedPawns.size() == 0)
+        {
+            this.Destroy();
+        }
     }
 
     public abstract void Action(Pawn controlledPawn);
@@ -44,5 +48,11 @@ public abstract class Controller extends EtherObject{
         {
             Action(pawn);
         }
+    }
+
+    @Override
+    public void Destroy()
+    {
+
     }
 }

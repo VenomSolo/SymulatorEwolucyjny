@@ -38,7 +38,7 @@ private Pane root;
         primaryStage.setScene(new Scene(root, 300, 275));
         primaryStage.show();
         */
-        Grid grid1 = new Grid(20, 20, 500, 500);
+        Grid grid1 = new Grid(10, 10, 500, 500);
         agh.cs.projekt1.SimulationScene simScene = new SimulationScene(true, new Grid[]{grid1});
         stats = new Statistics();
         simScene.stats = stats;

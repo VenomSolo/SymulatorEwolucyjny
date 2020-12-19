@@ -12,11 +12,13 @@ import java.util.Map;
 public class Grid {
     private TilePane tiles;
     private HashMap<Vector2d, Label> labels;
+    private int n;
     final int HGAP = 2;
     final int VGAP = 2;
 
     public Grid(int columns, int rows, int width, int height)
     {
+        n = columns;
         Vector2d tempVector;
         Label tempLabel;
         labels = new HashMap<>();
@@ -44,6 +46,8 @@ public class Grid {
             }
         }
     }
+
+    public int getN() {return n;}
 
     public TilePane getTiles()
     {

@@ -19,13 +19,13 @@ public class Grass extends MapObject {
     }
 
     @Override
-    protected void OnHit(MapObject other) {
+    protected void OnHit(CollisionInfo info) {
 
     }
 
     @Override
-    protected void OnOverlap(MapObject other) {
-        if(other instanceof Animal)
+    protected void OnOverlap(CollisionInfo info) {
+        if(info.getOther() instanceof Animal)
         {
             ((SimulationMap) getMap()).QueryToEat(this);
         }

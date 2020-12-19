@@ -22,12 +22,12 @@ public enum MapDirection {
 
     public MapDirection next()
     {
-        return vals[ordinal() == 3 ? 0 : (ordinal()+1)];
+        return vals[ordinal() == 7 ? 0 : (ordinal()+1)];
     }
 
     public MapDirection previous()
     {
-        return vals[ordinal() == 0 ? 3 : (ordinal()-1)];
+        return vals[ordinal() == 0 ? 7 : (ordinal()-1)];
     }
 
     public Vector2d toUnitVector()
