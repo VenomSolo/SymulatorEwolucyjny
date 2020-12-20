@@ -2,6 +2,9 @@ package agh.cs.projekt1;
 
 import agh.cs.po.*;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class Animal extends Pawn {
     private int energy;
     private static int id = 0;
@@ -35,8 +38,20 @@ public class Animal extends Pawn {
     {
         this.ChangeEnergy(-this.energy/4);
         other.ChangeEnergy(-other.energy/4);
-        getMap().AddObject(new Animal(scene, this.position.add(new Vector2d(0,1)), getMap(),
-                this.energy/4+other.energy/4, ((Genom)getController()).CombineGenes((Genom)other.getController())));
+        Vector2d childPosition = new Vector2d(0,0);
+        ArrayList<Vector2d> neighbours = ((SimulationMap)getMap()).GetEmptyNeighbours(this.position);
+        if(neighbours.size() == 0)
+        {
+            childPosition = ((SimulationMap) getMap()).RandomEmptyPosition();
+        }
+        else
+        {
+            childPosition = neighbours.get(new Random().nextInt(neighbours.size()));
+        }
+        Animal child = new Animal(scene, childPosition, getMap(),
+                this.energy/4+other.energy/4, ((Genom)getController()).CombineGenes((Genom)other.getController()));
+        child.setOrientation(MapDirection.values()[new Random().nextInt(MapDirection.values().length)]);
+        getMap().AddObject(child);
     }
 
     @Override
@@ -100,7 +115,7 @@ public class Animal extends Pawn {
 
     @Override
     protected void BeforeMove(Vector2d diff) {
-        ChangeEnergy(-1);
+        ChangeEnergy(-SimulationScene.moveEnergy);
     }
 
     @Override

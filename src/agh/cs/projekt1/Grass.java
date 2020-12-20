@@ -3,13 +3,14 @@ package agh.cs.projekt1;
 import agh.cs.po.*;
 
 public class Grass extends MapObject {
-    static int energy = 5;
+    int energy = 5;
 
     public Grass(Scene scene, Vector2d spawnPosition, Map assignedMap, int defaultLayer, int energy)
     {
         super(scene, spawnPosition, assignedMap, defaultLayer);
-        //this.energy = energy;
+        this.energy = SimulationScene.plantEnergy;
         this.getSpriteComponent().setColor("#32a836");
+        this.AddTag("Grass");
         getCollisionComponent().setColliderType(ColliderType.STATIC);
         getCollisionComponent().SetCollisionWith(ColliderType.DYNAMIC, CollisionType.OVERLAP);
     }

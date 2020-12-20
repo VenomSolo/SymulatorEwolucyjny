@@ -58,7 +58,10 @@ public abstract class AbstractObject implements ICanTick{
 
     public abstract void Tick();
 
-    public abstract void Destroy();
+    public void Destroy()
+    {
+        tags.clear();
+    }
 
     @Override
     final public boolean equals(Object obj)

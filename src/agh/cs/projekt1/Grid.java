@@ -10,11 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Grid {
+    private agh.cs.po.Map map;
     private TilePane tiles;
     private HashMap<Vector2d, Label> labels;
     private int n;
-    final int HGAP = 2;
-    final int VGAP = 2;
+    final int HGAP = 1;
+    final int VGAP = 1;
 
     public Grid(int columns, int rows, int width, int height)
     {
@@ -45,6 +46,10 @@ public class Grid {
                 this.tiles.getChildren().add(tempLabel);
             }
         }
+    }
+
+    public void setMap(agh.cs.po.Map map) {
+        this.map = map;
     }
 
     public int getN() {return n;}

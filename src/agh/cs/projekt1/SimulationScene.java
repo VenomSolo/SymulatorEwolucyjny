@@ -9,35 +9,33 @@ import sample.Main;
 import java.util.ArrayList;
 
 public class SimulationScene extends SingleScene {
-    public Statistics stats;
-    public int startEnergy = 20;
-    
-    public SimulationScene(boolean bAllowTick, Grid[] grids) {
+    public int day = 0;
+    private static int newID = 1;
+    public int id;
+    public static int startEnergy;
+    public static int moveEnergy;
+    public static int plantEnergy;
+
+    public SimulationScene(boolean bAllowTick, Grid[] grids, Statistics[] stats, float jungleRatio) {
         super(bAllowTick);
+        id = newID++;
         setInstance(this);
+        int j = 0;
         for(Grid grid : grids)
         {
-            AddMap(new SimulationMap(new Vector2d(grid.getN()-1,grid.getN()-1), 0.7f, true, this, grid));
+            AddMap(new SimulationMap(new Vector2d(grid.getN()-1,grid.getN()-1), jungleRatio, true, this, grid));
+            ((SimulationMap)getMaps().get(j)).setStats(stats[j]);
+            j++;
         }
         for(Map map : getMaps())
         {
             SimulationMap simMap = (SimulationMap) map;
-            for(int i = 0; i < 50; i++)
+            for(int i = 0; i < 5; i++)
             {
-                map.AddObject(new Animal(this, new Vector2d(9,9),
+                map.AddObject(new Animal(this, new Vector2d(10,10),
                         map, 1, new Genom(this, 32)));
             }
         }
-
-/*
-        Animal a1 = new Animal(this, new Vector2d(8,8),
-                map1, 1, new Genom(this, new int[]{0,1,1,1,1,1,1,1,1,2,3,4,5,6,6,7}));
-        map1.AddObject(a1);
-
-        map1.AddObject(new Animal(this, new Vector2d(9,9),
-                map1, 1, new Genom(this, new int[]{0,1,1,1,1,1,1,1,1,2,3,4,5,6,7,7})));
-*/
-
     }
 
     public static SimulationScene getInstance()
@@ -50,7 +48,7 @@ public class SimulationScene extends SingleScene {
         super.run();
         while(true)
         {
-            if(Main.paused.get())
+            if((Main.paused1.get() && this.id == 1) || Main.paused2.get() && this.id == 2)
             {
                 synchronized(this)
                 {
@@ -67,7 +65,7 @@ public class SimulationScene extends SingleScene {
             try
             {
                 Tick();
-                this.sleep(17);
+                this.sleep(100);
             }
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -80,18 +78,22 @@ public class SimulationScene extends SingleScene {
     @Override
     public void Tick() {
         super.Tick();
+        day++;
         ClearCorpses();
         RotateAndMove();
         Feed();
         Mate();
         SpawnGrass();
-        stats.setI(stats.getI()+1);
-        System.out.println(stats.getI() + " Tick");
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                SimulationMap map1 = (SimulationMap) getMaps().get(0);
-                map1.UpdateGrid();
+                synchronized (this)
+                {
+                    for(Map map : getMaps())
+                    {
+                        ((SimulationMap) map).UpdateGrid();
+                    }
+                }
             }
         });
     }

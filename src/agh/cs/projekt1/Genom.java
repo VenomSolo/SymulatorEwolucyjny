@@ -95,7 +95,6 @@ public class Genom extends Controller {
                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length})).sorted().toArray();
         for(int i = 0; i < splitPoints.length-1; i++)
         {
-            System.out.println("From: " + splitPoints[i] + " To: " + splitPoints[i+1] + " Genes length: " + other.genes.length);
             if(thisCounter == 2)
             {
                newGenes = IntStream.concat(Arrays.stream(newGenes), Arrays.stream(
@@ -125,7 +124,6 @@ public class Genom extends Controller {
     private void FixGenes()
     {
         boolean errorFixed = false;
-        System.out.println("Before fix: " + genes.length);
         for(MapDirection dir : MapDirection.values())
         {
             if (!Arrays.stream(genes).distinct().anyMatch(i -> i== dir.ordinal()))
@@ -137,7 +135,6 @@ public class Genom extends Controller {
 
         if (errorFixed) FixGenes();
         else genes = Arrays.stream(genes).sorted().toArray();
-        System.out.println("After fix: " + genes.length);
     }
 
     public void Rotate(Animal animal)

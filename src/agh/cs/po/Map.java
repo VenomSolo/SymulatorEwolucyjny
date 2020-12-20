@@ -6,20 +6,27 @@ import agh.cs.projekt1.Grass;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 public class Map {
     public final Vector2d lBound = new Vector2d(0,0);
     public final Vector2d hBound;
-    private Scene scene;
+    private final Scene scene;
     private boolean foldable;
-    protected HashMap<Vector2d, HashMap<Integer, ArrayList<MapObject>>> objects;
+    protected ConcurrentHashMap<Vector2d, HashMap<Integer, ArrayList<MapObject>>> objects;
 
     public Map(Vector2d bounds, boolean foldable, Scene scene)
     {
         this.hBound = bounds;
         this.foldable = foldable;
         this.scene = scene;
-        this.objects = new HashMap<>();
+        this.objects = new ConcurrentHashMap<Vector2d, HashMap<Integer, ArrayList<MapObject>>>();
+    }
+
+    public Scene getScene()
+    {
+        return scene;
     }
 
     public boolean AddObject(MapObject object)
@@ -71,7 +78,7 @@ public class Map {
 
     public boolean IsEmpty(Vector2d position)
     {
-        return this.objects.get(position).isEmpty();
+        return this.objects.containsKey(position);
     }
 
     public ArrayList<MapObject> ObjectsAt(Vector2d position)
@@ -93,6 +100,17 @@ public class Map {
         list.sort(Comparator.comparingInt(MapObject::getLayer));
         if(list.size() == 0) return null;
         return (MapObject) list.get(list.size()-1);
+    }
+
+    public ArrayList<Vector2d> GetNeighbours(Vector2d position)
+    {
+        ArrayList ret = new ArrayList();
+        for(MapDirection dir : MapDirection.values())
+        {
+            Vector2d candidate = position.add(dir.toUnitVector());
+            ret.add(candidate);
+        }
+        return ret;
     }
 
     public ArrayList<MapObject> GetAllWithTag(String searchTag)

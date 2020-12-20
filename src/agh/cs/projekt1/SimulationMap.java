@@ -4,15 +4,18 @@ import agh.cs.po.*;
 import javafx.scene.control.Label;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
 public class SimulationMap extends Map {
     Grid grid;
+    Statistics stats;
     public Vector2d jungleLBound;
     public Vector2d jungleHBound;
     private ArrayList<Grass> eatingQuery;
     private ArrayList<Vector2d> matingQuery;
+
 
     public Grid getGrid() {
         return grid;
@@ -23,6 +26,7 @@ public class SimulationMap extends Map {
         this.jungleLBound = new Vector2d((int)Math.ceil(bounds.x * ((1-jungleRatio)/2)), (int)Math.ceil(bounds.y * ((1-jungleRatio)/2)));
         this.jungleHBound = new Vector2d((int)Math.floor(bounds.x * (1 - ((1-jungleRatio)/2))), (int)Math.floor(bounds.y * (1 - ((1-jungleRatio)/2))) + 1);
         this.grid = grid;
+        grid.setMap(this);
         this.eatingQuery = new ArrayList<>();
         this.matingQuery = new ArrayList<>();
 
@@ -35,6 +39,50 @@ public class SimulationMap extends Map {
                 AddObject(new Grass(scene, tempVector, this, -1, 1));
             }
         }
+    }
+
+    public void setStats(Statistics stats)
+    {
+        this.stats = stats;
+        stats.setMap(this);
+    }
+
+    private Vector2d RandomPosition()
+    {
+        return Vector2d.RandomVectorInBounds(lBound, hBound);
+    }
+
+    public void SpawnGrassInJungle()
+    {
+        
+    }
+
+    public Vector2d RandomStartPosition()
+    {
+        Vector2d tempVector;
+        do {
+            tempVector = RandomPosition();
+        } while (ObjectsAt(tempVector).size()>1);
+        return tempVector;
+    }
+
+    public Vector2d RandomEmptyPosition()
+    {
+        Vector2d tempVector;
+        do {
+            tempVector = RandomPosition();
+        } while (!IsEmpty(tempVector));
+        return tempVector;
+    }
+
+    public ArrayList<Vector2d> GetEmptyNeighbours(Vector2d position)
+    {
+        ArrayList<Vector2d> ret = new ArrayList();
+        for(Vector2d pos : GetNeighbours(position))
+        {
+            if(IsEmpty(pos)) ret.add(pos);
+        }
+        return ret;
     }
 
     public void QueryToEat(Grass toEat)
@@ -50,7 +98,7 @@ public class SimulationMap extends Map {
         {
             Vector2d pos = grass.getPosition();
             int count = (int) ObjectsAt(pos).stream().filter(obj -> obj.getLayer() == ObjectAtTop(pos).getLayer()).count();
-            int energy = Grass.energy;
+            int energy = grass.getEnergy();
             ObjectsAt(pos).stream().filter(obj -> obj.getLayer() == ObjectAtTop(pos).getLayer() && obj instanceof Animal)
                     .forEach(animal -> ((Animal) animal).Eat(energy));
             grass.Destroy();
@@ -78,11 +126,18 @@ public class SimulationMap extends Map {
 
     public synchronized void UpdateGrid()
     {
-        grid.ClearGrid();
-        for (Vector2d key : objects.keySet())
+        synchronized (grid)
         {
-            //if(ObjectAtTop(key) != null)
-            grid.UpdateGrid(key, ObjectAtTop(key).getSpriteComponent().getColor());
+            grid.ClearGrid();
+            for (Vector2d key : objects.keySet())
+            {
+                //if(ObjectAtTop(key) != null)
+                grid.UpdateGrid(key, ObjectAtTop(key).getSpriteComponent().getColor());
+            }
+        }
+        synchronized (stats)
+        {
+            stats.UpdateChart();
         }
     }
 }
