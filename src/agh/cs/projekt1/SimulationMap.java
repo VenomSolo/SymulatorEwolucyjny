@@ -5,6 +5,7 @@ import javafx.scene.control.Label;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
@@ -36,7 +37,7 @@ public class SimulationMap extends Map {
             for(int j = jungleLBound.y; j < jungleHBound.y; j++)
             {
                 tempVector = new Vector2d(i,j);
-                AddObject(new Grass(scene, tempVector, this, -1, 1));
+                AddObject(new Grass(scene, tempVector, this, -1));
             }
         }
     }
@@ -54,8 +55,47 @@ public class SimulationMap extends Map {
 
     public void SpawnGrassInJungle()
     {
-        
+        ArrayList<Vector2d> candidates = new ArrayList<Vector2d>();
+        for(int i = jungleLBound.x; i <= jungleHBound.x; i++)
+        {
+            for(int j = jungleLBound.y; j < jungleHBound.y; j++)
+            {
+                Vector2d tempVector = new Vector2d(i,j);
+                if(IsEmpty(tempVector)) candidates.add(tempVector);
+            }
+        }
+        if(candidates.size() == 0) {
+
+            return;
+        }
+        else
+        {
+            AddObject(new Grass(getScene(), candidates.get(
+                    Genom.rand.nextInt(candidates.size())), this, -1));
+        }
     }
+
+    public void SpawnGrassOutsideJungle()
+    {
+        ArrayList<Vector2d> candidates = new ArrayList<Vector2d>();
+        for(int i = lBound.x; i <= hBound.x; i++)
+        {
+            for(int j = lBound.y; j <= hBound.y; j++)
+            {
+                Vector2d tempVector = new Vector2d(i,j);
+                if(IsEmpty(tempVector) && !(tempVector.follows(jungleLBound)
+                && tempVector.precedes(jungleHBound))) candidates.add(tempVector);
+            }
+        }
+        if(candidates.size() == 0) return;
+        else
+        {
+            AddObject(new Grass(getScene(), candidates.get
+                    (Genom.rand.nextInt(candidates.size())), this, -1));
+        }
+    }
+
+
 
     public Vector2d RandomStartPosition()
     {
@@ -124,7 +164,7 @@ public class SimulationMap extends Map {
         matingQuery.clear();
     }
 
-    public synchronized void UpdateGrid()
+    public synchronized void UpdateGrid(SimulationScene scene)
     {
         synchronized (grid)
         {
@@ -137,7 +177,7 @@ public class SimulationMap extends Map {
         }
         synchronized (stats)
         {
-            stats.UpdateChart();
+            stats.UpdateChart(scene);
         }
     }
 }

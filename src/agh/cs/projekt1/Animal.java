@@ -8,7 +8,7 @@ import java.util.Random;
 public class Animal extends Pawn {
     private int energy;
     private static int id = 0;
-    private static SimulationScene castScene;
+    private SimulationScene castScene;
     public int lifetime = 0;
     public int kids = 0;
 
@@ -25,6 +25,12 @@ public class Animal extends Pawn {
         getCollisionComponent().setColliderType(ColliderType.DYNAMIC);
         getCollisionComponent().SetCollisionWith(ColliderType.STATIC, CollisionType.OVERLAP);
         getCollisionComponent().SetCollisionWith(ColliderType.DYNAMIC, CollisionType.OVERLAP);
+    }
+
+    public Animal(Scene scene, Vector2d spawnPosition, Map assignedMap, int defaultLayer, Genom newGenom, int newEnergy)
+    {
+        this(scene, spawnPosition, assignedMap, defaultLayer, newGenom);
+        this.energy = newEnergy;
     }
 
     public int getEnergy() {
@@ -46,14 +52,14 @@ public class Animal extends Pawn {
         ArrayList<Vector2d> neighbours = ((SimulationMap)getMap()).GetEmptyNeighbours(this.position);
         if(neighbours.size() == 0)
         {
-            childPosition = ((SimulationMap) getMap()).RandomEmptyPosition();
+            childPosition = Vector2d.RandomVectorInBounds(this.position.add(new Vector2d(-1,-1)), this.position.add(new Vector2d(1,1)));
         }
         else
         {
             childPosition = neighbours.get(new Random().nextInt(neighbours.size()));
         }
         Animal child = new Animal(scene, childPosition, getMap(),
-                this.energy/4+other.energy/4, ((Genom)getController()).CombineGenes((Genom)other.getController()));
+                this.energy/4+other.energy/4, ((Genom)getController()).CombineGenes((Genom)other.getController()),this.energy/4+other.energy/4);
         child.setOrientation(MapDirection.values()[new Random().nextInt(MapDirection.values().length)]);
         getMap().AddObject(child);
     }

@@ -34,19 +34,17 @@ public class Grid {
         //tiles.setPrefSize(width, height);
         tiles.setMaxSize(width, height);
         tiles.setStyle("-fx-background-color: #000000;");
-        tiles.setPadding(new Insets(HGAP/2,VGAP/2,HGAP/2,VGAP/2));
+        tiles.setPadding(new Insets(HGAP / 2, VGAP / 2, HGAP / 2, VGAP / 2));
         tiles.setHgap(HGAP);
         tiles.setVgap(VGAP);
-        for(int i = columns-1; i >= 0; i--)
-        {
-            for(int j = 0; j <= rows-1; j++)
-            {
-                tempVector = new Vector2d(j,i);
+        for (int i = columns - 1; i >= 0; i--) {
+            for (int j = 0; j <= rows - 1; j++) {
+                tempVector = new Vector2d(j, i);
                 tempLabel = new Label();
                 tempLabel.setStyle("-fx-background-color: #FFFFFF;");
                 //tempLabel.setText(tempVector.toString());
-                tempLabel.setMaxSize(width/columns-VGAP, height/rows-HGAP);
-                tempLabel.setPrefSize(width/columns-VGAP, height/rows-HGAP);
+                tempLabel.setMaxSize(width / columns - VGAP, height / rows - HGAP);
+                tempLabel.setPrefSize(width / columns - VGAP, height / rows - HGAP);
                 labels.put(tempVector, tempLabel);
                 this.tiles.getChildren().add(tempLabel);
             }
@@ -101,7 +99,7 @@ public class Grid {
 
     public synchronized void Highlight(int[] genes)
     {
-        Genom controller = Genom.existingGenoms.get(genes);
+        Genom controller = ((SimulationScene)map.getScene()).existingGenoms.get(Arrays.toString(genes));
         for(Pawn pawn : controller.getPossessedPawns())
         {
             if(labels.containsKey(pawn.getPosition()))

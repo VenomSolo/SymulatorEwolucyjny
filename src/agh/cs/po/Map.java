@@ -14,14 +14,14 @@ public class Map {
     public final Vector2d hBound;
     private final Scene scene;
     private boolean foldable;
-    protected ConcurrentHashMap<Vector2d, HashMap<Integer, ArrayList<MapObject>>> objects;
+    protected ConcurrentHashMap<Vector2d, ConcurrentHashMap<Integer, ArrayList<MapObject>>> objects;
 
     public Map(Vector2d bounds, boolean foldable, Scene scene)
     {
         this.hBound = bounds;
         this.foldable = foldable;
         this.scene = scene;
-        this.objects = new ConcurrentHashMap<Vector2d, HashMap<Integer, ArrayList<MapObject>>>();
+        this.objects = new ConcurrentHashMap<Vector2d, ConcurrentHashMap<Integer, ArrayList<MapObject>>>();
     }
 
     public Scene getScene()
@@ -39,7 +39,7 @@ public class Map {
         if (object == null) return false;
         object.scene =  this.scene;
         if (!objects.containsKey(position)) {
-            objects.put(position, new HashMap<>());
+            objects.put(position, new ConcurrentHashMap<>());
         }
         if(!objects.get(position).containsKey(object.getLayer()))
         {
@@ -78,17 +78,20 @@ public class Map {
 
     public boolean IsEmpty(Vector2d position)
     {
-        return this.objects.containsKey(position);
+        return !this.objects.containsKey(position);
     }
 
     public ArrayList<MapObject> ObjectsAt(Vector2d position)
     {
         ArrayList ret = new ArrayList();
-        for(ArrayList list : this.objects.get(position).values())
+        synchronized (objects)
         {
-            for(Object object : list)
+            for(ArrayList list : this.objects.get(position).values())
             {
-                ret.add(object);
+                for(Object object : list)
+                {
+                    ret.add(object);
+                }
             }
         }
         return ret;
@@ -116,7 +119,7 @@ public class Map {
     public ArrayList<MapObject> GetAllWithTag(String searchTag)
     {
         ArrayList<MapObject> ret = new ArrayList<>();
-        for(HashMap<Integer, ArrayList<MapObject>> map : objects.values())
+        for(ConcurrentHashMap<Integer, ArrayList<MapObject>> map : objects.values())
         {
             for(ArrayList<MapObject> list : map.values())
             {

@@ -1,25 +1,28 @@
 package agh.cs.projekt1;
 
 import agh.cs.po.*;
+import agh.cs.po.Map;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.transform.Rotate;
 import sample.Main;
 
-import java.util.ArrayList;
+import java.util.*;
 
-public class SimulationScene extends SingleScene {
+public class SimulationScene extends Scene {
     public int day = 0;
     private static int newID = 1;
     public int id;
     public static int startEnergy;
     public static int moveEnergy;
     public static int plantEnergy;
+    private SimulationScene self;
+    public HashMap<String, Genom> existingGenoms = new HashMap<>();
 
     public SimulationScene(boolean bAllowTick, Grid[] grids, Statistics[] stats, float jungleRatio) {
         super(bAllowTick);
         id = newID++;
-        setInstance(this);
+        this.self = this;
         int j = 0;
         for(Grid grid : grids)
         {
@@ -27,21 +30,33 @@ public class SimulationScene extends SingleScene {
             ((SimulationMap)getMaps().get(j)).setStats(stats[j]);
             j++;
         }
+
+        Map testMap = getMaps().get(0);
+        List<Vector2d> candidatesList = new ArrayList<Vector2d>();
+        for(int i = testMap.lBound.x; i <= testMap.hBound.x; i++)
+        {
+            for(int h = testMap.lBound.y; h <= testMap.hBound.y; h++)
+            {
+                Vector2d tempVector = new Vector2d(i,h);
+                candidatesList.add(tempVector);
+            }
+        }
+        Collections.shuffle(candidatesList);
+        ArrayDeque<Vector2d> candidates = new ArrayDeque<>(candidatesList);
         for(Map map : getMaps())
         {
             SimulationMap simMap = (SimulationMap) map;
-            for(int i = 0; i < 10; i++)
+            for(int i = 0; i < 100; i++)
             {
-                map.AddObject(new Animal(this, new Vector2d(6,6),
-                        map, 1, Genom.BuildGenom(this, 10)));
+                Vector2d nearlyUniquePosition = candidates.poll();
+                map.AddObject(new Animal(this, nearlyUniquePosition,
+                        map, 1, Genom.BuildGenom(this, 32)));
+                candidates.add(nearlyUniquePosition);
             }
         }
     }
 
-    public static SimulationScene getInstance()
-    {
-        return (SimulationScene) SingleScene.getInstance();
-    }
+
 
     @Override
     public void run() {
@@ -91,7 +106,7 @@ public class SimulationScene extends SingleScene {
                 {
                     for(Map map : getMaps())
                     {
-                        ((SimulationMap) map).UpdateGrid();
+                        ((SimulationMap) map).UpdateGrid(self);
                     }
                 }
             }
@@ -101,7 +116,6 @@ public class SimulationScene extends SingleScene {
     public void ClearCorpses() {
         for(Map map : getMaps())
         {
-            System.out.println("Animals: " + map.GetAllWithTag("Animal").size());
             ArrayList<MapObject> dead = map.GetAllWithTag("dead");
             for (MapObject obj : dead)
             {
@@ -112,7 +126,6 @@ public class SimulationScene extends SingleScene {
 
     public void RotateAndMove() {
         ArrayList<AbstractObject> controllers = GetRegisteredObjects("Genom");
-        System.out.println("Controllers: " + controllers.size());
         for(AbstractObject controller : controllers)
         {
             Genom animalController = (Genom)controller;
@@ -141,10 +154,8 @@ public class SimulationScene extends SingleScene {
         for(Map map : getMaps())
         {
             SimulationMap simMap = (SimulationMap)map;
-            simMap.AddObject(new Grass(this, Vector2d.RandomVectorInBounds(
-                    simMap.jungleLBound, simMap.jungleHBound), simMap, -1, 1));
-            simMap.AddObject(new Grass(this, Vector2d.RandomVectorInBounds(
-                    simMap.lBound, simMap.hBound), simMap, -1, 1));
+            simMap.SpawnGrassOutsideJungle();
+            simMap.SpawnGrassInJungle();
         }
     }
 

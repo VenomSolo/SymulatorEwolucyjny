@@ -5,10 +5,7 @@ import agh.cs.po.MapDirection;
 import agh.cs.po.Pawn;
 import agh.cs.po.Scene;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
@@ -16,19 +13,25 @@ public class Genom extends Controller {
     protected static Random rand = new Random();
     protected int[] genes;
     protected int[] occurences;
-    static HashMap<int[], Genom> existingGenoms = new HashMap<>();
 
     static Genom BuildGenom(Scene scene, int limiter)
     {
-        int[] newGenes = ThreadLocalRandom.current().ints(0, 7)
-                .limit(limiter).sorted().toArray();
-        if(existingGenoms.containsKey(newGenes)) return existingGenoms.get(newGenes);
+        SimulationScene castScene = (SimulationScene)scene;
+        var existingGenoms = castScene.existingGenoms;
+        int[] newGenes = Fix(ThreadLocalRandom.current().ints(0, 7)
+                .limit(limiter).sorted().toArray());
+        if(existingGenoms.containsKey(Arrays.toString(newGenes)))
+        {
+            return existingGenoms.get(Arrays.toString(newGenes));
+        }
         else return new Genom(scene, newGenes);
     }
 
     static Genom BuildGenomFrom(Scene scene, int[] newGenes)
     {
-        if(existingGenoms.containsKey(newGenes)) return existingGenoms.get(newGenes);
+        SimulationScene castScene = (SimulationScene)scene;
+        var existingGenoms = castScene.existingGenoms;
+        if(existingGenoms.containsKey(Arrays.toString(newGenes))) return existingGenoms.get(Arrays.toString(newGenes));
         else return new Genom(scene, newGenes);
     }
 
@@ -36,6 +39,16 @@ public class Genom extends Controller {
     {
         this(scene, (ThreadLocalRandom.current().ints(0, 7)
                 .limit(limiter)).toArray());
+    }
+
+    private List<Integer> MakeList(int[] array)
+    {
+        List<Integer> ret = new ArrayList<>();
+        for(int i : array)
+        {
+            ret.add(i);
+        }
+        return ret;
     }
 
     public Genom(Scene scene, int[] startGenes)
@@ -50,7 +63,12 @@ public class Genom extends Controller {
             occurences[genes[i]]++;
         }
         FixGenes();
-        existingGenoms.put(genes, this);
+        SimulationScene castScene = (SimulationScene)scene;
+        var existingGenoms = castScene.existingGenoms;
+        if(!existingGenoms.containsKey(Arrays.toString(genes)))
+        {
+            existingGenoms.put(Arrays.toString(genes), this);
+        }
         //System.out.println();
     }
 
@@ -73,41 +91,6 @@ public class Genom extends Controller {
         int splitPointCount = 3;
         int thisCounter = 0;
         int otherCounter = 0;
-        //IntStream splitPoints = IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
-        //        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted();
-        /*
-        for(int i = 0; i < IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
-                distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().count(); i++)
-        {
-            if(thisCounter == 2)
-            {
-                newGenes = IntStream.concat(newGenes,
-                        Arrays.stream(Arrays.copyOfRange(other.genes
-                                ,IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
-                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i],IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
-                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i+1])));
-            }
-            else if(otherCounter == 2)
-            {
-                newGenes = IntStream.concat(newGenes,
-                        Arrays.stream(Arrays.copyOfRange(this.genes
-                                ,IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
-                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i],IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
-                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i+1])));
-            }
-            else if(i < 3)
-            {
-                System.out.println("i: " + i);
-                boolean pickThis = rand.nextBoolean();
-                newGenes = IntStream.concat(newGenes,
-                        Arrays.stream(Arrays.copyOfRange((pickThis ? this.genes : other.genes)
-                                ,IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
-                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i],IntStream.concat(ThreadLocalRandom.current().ints(0, genes.length).
-                                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length-1})).sorted().toArray()[i+1])));
-                if(pickThis) thisCounter++;
-                else otherCounter++;
-            }
-        }*/
         int [] newGenes = new int[0];
         int[] splitPoints = IntStream.concat(ThreadLocalRandom.current().ints(1, genes.length).
                        distinct().limit(splitPointCount), Arrays.stream(new int[]{0,genes.length})).sorted().toArray();
@@ -153,6 +136,24 @@ public class Genom extends Controller {
         if (errorFixed) FixGenes();
         else genes = Arrays.stream(genes).sorted().toArray();
     }
+
+    static private int[] Fix(int[] potentialGenes)
+    {
+        boolean errorFixed = false;
+        for(MapDirection dir : MapDirection.values())
+        {
+            if (!Arrays.stream(potentialGenes).distinct().anyMatch(i -> i== dir.ordinal()))
+            {
+                potentialGenes[rand.nextInt(potentialGenes.length)] = dir.ordinal();
+                errorFixed = true;
+            }
+        }
+
+        if (errorFixed) potentialGenes = Fix(potentialGenes);
+        else potentialGenes = Arrays.stream(potentialGenes).sorted().toArray();
+        return potentialGenes;
+    }
+
 
     public void Rotate(Animal animal)
     {

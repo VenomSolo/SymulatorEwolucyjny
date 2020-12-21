@@ -5,7 +5,7 @@ import agh.cs.po.*;
 public class Grass extends MapObject {
     int energy = 5;
 
-    public Grass(Scene scene, Vector2d spawnPosition, Map assignedMap, int defaultLayer, int energy)
+    public Grass(Scene scene, Vector2d spawnPosition, Map assignedMap, int defaultLayer)
     {
         super(scene, spawnPosition, assignedMap, defaultLayer);
         this.energy = SimulationScene.plantEnergy;
