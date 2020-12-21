@@ -24,7 +24,7 @@ public class Main extends Application {
     private static final int PREFERRED_WIDTH = 1920;
     private static final int PREFERRED_HEIGHT = 1080;
     private javafx.scene.Scene scene;
-    private Pane root;
+    private BorderPane root;
 
     class Params {
         public int width;
@@ -89,18 +89,19 @@ public class Main extends Application {
         SimulationScene.moveEnergy = params.moveEnergy;
         SimulationScene.plantEnergy = params.plantEnergy;
 
-        Grid grid1 = new Grid(params.width, params.height, 500, 500);
-        Grid grid2 = new Grid(params.width, params.height, 500, 500);
-        Statistics stat1 = new Statistics(500, 500);
-        Statistics stat2 = new Statistics(500, 500);
+        Grid grid1 = new Grid(params.width, params.height, 600, 600);
+        Grid grid2 = new Grid(params.width, params.height, 600, 600);
+        Statistics stat1 = new Statistics(600, 400);
+        Statistics stat2 = new Statistics(600, 400);
         agh.cs.projekt1.SimulationScene simScene1 = new SimulationScene(true, new Grid[]{grid1}, new Statistics[]{stat1}, params.jungleRatio);
         agh.cs.projekt1.SimulationScene simScene2 = new SimulationScene(true, new Grid[]{grid2}, new Statistics[]{stat2}, params.jungleRatio);
 
 
-        root = new Pane();
+        root = new BorderPane();
 
 
         VBox vBox1 = new VBox();
+        vBox1.setSpacing(5);
         vBox1.setAlignment(Pos.CENTER);
         vBox1.getChildren().add(grid1.getTiles());
         javafx.scene.control.Button pause1 = new javafx.scene.control.Button("Pause");
@@ -123,11 +124,35 @@ public class Main extends Application {
                 }
             }
         });
-        vBox1.getChildren().add(pause1);
+        HBox hButtonBox = new HBox();
+        hButtonBox.setAlignment(Pos.CENTER);
+        hButtonBox.setSpacing(25);
+        hButtonBox.getChildren().add(pause1);
+        javafx.scene.control.Button highlight1 = new javafx.scene.control.Button("HighLight");
+        highlight1.setOnAction(event ->
+        {
+            if(!paused1.get())
+            {
+                pause1.setText("Start");
+                paused1.set(true);
+            }
+            else
+            {
+
+            }
+            synchronized (simScene1)
+            {
+                simScene1.Highlight();
+            }
+        });
+        hButtonBox.getChildren().add(highlight1);
+        vBox1.getChildren().add(hButtonBox);
         vBox1.getChildren().add(stat1.getBox());
 
 
+
         VBox vBox2 = new VBox();
+        vBox2.setSpacing(5);
         vBox2.setAlignment(Pos.CENTER);
         vBox2.getChildren().add(grid2.getTiles());
         javafx.scene.control.Button pause2 = new javafx.scene.control.Button("Pause");
@@ -149,21 +174,48 @@ public class Main extends Application {
                 }
             }
         });
-        vBox2.getChildren().add(pause2);
+        HBox hButtonBox2 = new HBox();
+        hButtonBox2.setAlignment(Pos.CENTER);
+        hButtonBox2.setSpacing(25);
+        hButtonBox2.getChildren().add(pause2);
+        javafx.scene.control.Button highlight2 = new javafx.scene.control.Button("HighLight");
+        highlight2.setOnAction(event ->
+        {
+            if(!paused2.get())
+            {
+                pause2.setText("Start");
+                paused2.set(true);
+            }
+            else
+            {
+
+            }
+            synchronized (simScene2)
+            {
+                simScene2.Highlight();
+            }
+        });
+        hButtonBox2.getChildren().add(highlight2);
+        vBox2.getChildren().add(hButtonBox2);
+
+
         vBox2.getChildren().add(stat2.getBox());
 
         HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER);
         hbox.getChildren().add(vBox1);
         hbox.getChildren().add(vBox2);
         hbox.setSpacing(100);
 
 
-        root.getChildren().add(hbox);
+        //root.getChildren().add(hbox);
+        root.setCenter(hbox);
         //LineChart chart = new LineChart();
         scene = new javafx.scene.Scene(root);
         root.setPrefSize(PREFERRED_WIDTH, PREFERRED_HEIGHT);
+        //root.setStyle("-fx-background-color: #222222;");
         primaryStage.setScene(scene);
-        primaryStage.setMaximized(true);
+        primaryStage.setFullScreen(true);
         primaryStage.setTitle("Symulator ewolucyjny");
         primaryStage.show();
         simScene1.start();

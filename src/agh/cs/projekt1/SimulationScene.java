@@ -30,10 +30,10 @@ public class SimulationScene extends SingleScene {
         for(Map map : getMaps())
         {
             SimulationMap simMap = (SimulationMap) map;
-            for(int i = 0; i < 5; i++)
+            for(int i = 0; i < 10; i++)
             {
-                map.AddObject(new Animal(this, new Vector2d(10,10),
-                        map, 1, new Genom(this, 32)));
+                map.AddObject(new Animal(this, new Vector2d(6,6),
+                        map, 1, Genom.BuildGenom(this, 10)));
             }
         }
     }
@@ -111,7 +111,7 @@ public class SimulationScene extends SingleScene {
     }
 
     public void RotateAndMove() {
-        ArrayList<AbstractObject> controllers = GetRegisteredObjects("AnimalController");
+        ArrayList<AbstractObject> controllers = GetRegisteredObjects("Genom");
         System.out.println("Controllers: " + controllers.size());
         for(AbstractObject controller : controllers)
         {
@@ -145,6 +145,15 @@ public class SimulationScene extends SingleScene {
                     simMap.jungleLBound, simMap.jungleHBound), simMap, -1, 1));
             simMap.AddObject(new Grass(this, Vector2d.RandomVectorInBounds(
                     simMap.lBound, simMap.hBound), simMap, -1, 1));
+        }
+    }
+
+    public void Highlight()
+    {
+        for(Map map : getMaps())
+        {
+            SimulationMap simMap = ((SimulationMap)map);
+            simMap.getGrid().Highlight(simMap.stats.dominatingGenotype);
         }
     }
 }

@@ -7,6 +7,7 @@ import agh.cs.po.Scene;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
@@ -15,6 +16,21 @@ public class Genom extends Controller {
     protected static Random rand = new Random();
     protected int[] genes;
     protected int[] occurences;
+    static HashMap<int[], Genom> existingGenoms = new HashMap<>();
+
+    static Genom BuildGenom(Scene scene, int limiter)
+    {
+        int[] newGenes = ThreadLocalRandom.current().ints(0, 7)
+                .limit(limiter).sorted().toArray();
+        if(existingGenoms.containsKey(newGenes)) return existingGenoms.get(newGenes);
+        else return new Genom(scene, newGenes);
+    }
+
+    static Genom BuildGenomFrom(Scene scene, int[] newGenes)
+    {
+        if(existingGenoms.containsKey(newGenes)) return existingGenoms.get(newGenes);
+        else return new Genom(scene, newGenes);
+    }
 
     public Genom(Scene scene, int limiter)
     {
@@ -25,6 +41,7 @@ public class Genom extends Controller {
     public Genom(Scene scene, int[] startGenes)
     {
         super(scene);
+        scene.Register("Genom", this);
         this.setName("Genes");
         genes = startGenes;
         occurences = new int[8];
@@ -33,6 +50,7 @@ public class Genom extends Controller {
             occurences[genes[i]]++;
         }
         FixGenes();
+        existingGenoms.put(genes, this);
         //System.out.println();
     }
 
@@ -116,8 +134,7 @@ public class Genom extends Controller {
             }
         }
 
-        Genom newGenom = new Genom(scene, Arrays.stream(newGenes).sorted().toArray());
-        newGenom.FixGenes();
+        Genom newGenom = Genom.BuildGenomFrom(scene, Arrays.stream(newGenes).sorted().toArray());
         return newGenom;
     }
 

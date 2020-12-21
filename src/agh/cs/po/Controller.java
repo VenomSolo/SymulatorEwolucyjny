@@ -9,7 +9,6 @@ public abstract class Controller extends EtherObject{
     public Controller(Scene scene)
     {
         super(scene);
-        scene.Register("AnimalController", this);
         possessedPawns = new ArrayList<Pawn>();
     }
 
@@ -29,6 +28,10 @@ public abstract class Controller extends EtherObject{
         {
             this.Destroy();
         }
+    }
+
+    public ArrayList<Pawn> getPossessedPawns() {
+        return possessedPawns;
     }
 
     public abstract void Action(Pawn controlledPawn);

@@ -9,6 +9,8 @@ public class Animal extends Pawn {
     private int energy;
     private static int id = 0;
     private static SimulationScene castScene;
+    public int lifetime = 0;
+    public int kids = 0;
 
     public Animal(Scene scene, Vector2d spawnPosition, Map assignedMap, int defaultLayer, Genom newGenom)
     {
@@ -36,6 +38,8 @@ public class Animal extends Pawn {
 
     public void Copulate(Animal other)
     {
+        this.kids++;
+        other.kids++;
         this.ChangeEnergy(-this.energy/4);
         other.ChangeEnergy(-other.energy/4);
         Vector2d childPosition = new Vector2d(0,0);
@@ -127,7 +131,7 @@ public class Animal extends Pawn {
     public void Tick() {
         if(TickAllowed())
         {
-            if(getController() == null);
+            lifetime++;
         }
     }
 

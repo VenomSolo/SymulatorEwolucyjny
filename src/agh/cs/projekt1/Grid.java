@@ -1,11 +1,14 @@
 package agh.cs.projekt1;
 
+import agh.cs.po.Pawn;
 import agh.cs.po.Vector2d;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.TilePane;
 
+import javax.swing.text.Highlighter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,8 +17,10 @@ public class Grid {
     private TilePane tiles;
     private HashMap<Vector2d, Label> labels;
     private int n;
-    final int HGAP = 1;
-    final int VGAP = 1;
+    private Vector2d lastPicked = null;
+    private String lastStyle = null;
+    final int HGAP = 2;
+    final int VGAP = 2;
 
     public Grid(int columns, int rows, int width, int height)
     {
@@ -46,6 +51,25 @@ public class Grid {
                 this.tiles.getChildren().add(tempLabel);
             }
         }
+        for(Label label : labels.values())
+        {
+            label.setOnMouseClicked(event ->
+            {
+                for(Map.Entry<Vector2d, Label> entry : labels.entrySet())
+                {
+                    if(entry.getValue() == label)
+                    {
+                        if(lastPicked != null && lastStyle != null)
+                        {
+                            labels.get(lastPicked).setStyle(lastStyle);
+                        }
+                        lastPicked = entry.getKey();
+                        lastStyle = entry.getValue().getStyle();
+                        HighlightOne(entry.getKey());
+                    }
+                }
+            });
+        }
     }
 
     public void setMap(agh.cs.po.Map map) {
@@ -73,5 +97,27 @@ public class Grid {
         {
             labels.get(position).setStyle("-fx-background-color: " + newColor + ";");
         }
+    }
+
+    public synchronized void Highlight(int[] genes)
+    {
+        Genom controller = Genom.existingGenoms.get(genes);
+        for(Pawn pawn : controller.getPossessedPawns())
+        {
+            if(labels.containsKey(pawn.getPosition()))
+            {
+                labels.get(pawn.getPosition()).setStyle("-fx-background-color: " + "#FFA500" + ";");
+            }
+        }
+    }
+
+    private synchronized void HighlightOne(Vector2d position)
+    {
+        if(map.ObjectAtTop(position) instanceof Animal)
+        {
+            labels.get(position).setStyle("-fx-background-color: " + "#ffd700" + ";");
+            ((SimulationMap)map).stats.SetChartTitle(Arrays.toString(((Genom) ((Animal) map.ObjectAtTop(position)).getController()).genes));
+        }
+
     }
 }

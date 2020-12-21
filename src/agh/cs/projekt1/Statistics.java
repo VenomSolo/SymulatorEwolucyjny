@@ -1,6 +1,8 @@
 package agh.cs.projekt1;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import agh.cs.po.Map;
 import javafx.scene.chart.LineChart;
@@ -13,6 +15,8 @@ public class Statistics {
     private int i = 0;
     private HBox box;
     private LineChart<Number,Number> chart;
+    private int maxPossesed = 0;
+    public int[] dominatingGenotype;
     final NumberAxis xAxis = new NumberAxis();
     final NumberAxis yAxis = new NumberAxis();
     private XYChart.Series allAnimals = new XYChart.Series();
@@ -27,13 +31,37 @@ public class Statistics {
     {
         box = new HBox();
         box.setMaxSize(width, height);
+        box.setPrefSize(width, height);
         xAxis.setLabel("Day");
         chart = new LineChart<Number, Number>(xAxis,yAxis);
+        chart.setPrefSize(width, height);
+        xAxis.setStyle("-fx-font-color: #000000;");
+        chart.setStyle(".line-chart-title {\n" +
+                "-fx-text-fill: #FFFFFF;\n" +
+                "-fx-fill: #FFFFFF;\n" +
+                "-fx-font-size: 1.6em;\n" +
+                "}\n" +
+                " \n" +
+                ".axis {\n" +
+                "    -fx-font-size: 1.4em;    \n" +
+                "    -fx-tick-label-fill: white;\n" +
+                "}\n"+
+                ".axis-label {\n" +
+                "  -fx-fill: #FFFFFF;\n" +
+                "  -fx-font-color: #FFFFFF;\n" +
+                "}");
         allAnimals.setName("Zwierzęta");
         allPlants.setName("Rośliny");
+        avgEnergy.setName("Srednia energia");
+        avgLifetime.setName("Srednia długość życia");
+        avgChildren.setName("Srednia liczba dzieci");
         chart.getData().add(allAnimals);
         chart.getData().add(allPlants);
+        chart.getData().add(avgEnergy);
+        chart.getData().add(avgLifetime);
+        chart.getData().add(avgChildren);
         box.getChildren().add(chart);
+
     }
 
     public void setMap(Map map) {
@@ -46,19 +74,40 @@ public class Statistics {
 
     public void UpdateChart()
     {
-        int alive = map.GetAllWithTag("Animal").size();
-        int plant = map.GetAllWithTag("Grass").size();
+
+        ArrayList animals = map.GetAllWithTag("Animal");
+        ArrayList plants = map.GetAllWithTag("Grass");
+        int aliveCount = animals.size();
+        int plantCount = plants.size();
+        double averageEnergy = (double) animals.stream().collect(Collectors.averagingInt(x -> (((Animal)x).getEnergy())));
+        double averageLifetime = (double) animals.stream().collect(Collectors.averagingInt(x -> (((Animal)x).lifetime)));
+        double averageChildren = (double) animals.stream().collect(Collectors.averagingInt(x -> (((Animal)x).kids)));
+        System.out.println(averageChildren);
         int day = ((SimulationScene)map.getScene()).day;
-        allAnimals.getData().add(new XYChart.Data(day, alive));
-        /*if(allAnimals.getData().size() > 30)
+        allAnimals.getData().add(new XYChart.Data(day, aliveCount));
+        allPlants.getData().add(new XYChart.Data(day, plantCount));
+        avgEnergy.getData().add(new XYChart.Data(day, averageEnergy));
+        avgLifetime.getData().add(new XYChart.Data(day, averageLifetime));
+        avgChildren.getData().add(new XYChart.Data(day, averageChildren));
+        synchronized (Genom.existingGenoms)
         {
-            allAnimals.getData().remove(allAnimals.getData().get(0));
-        }*/
-        allPlants.getData().add(new XYChart.Data(day, plant));
-        /*if(allPlants.getData().size() > 30)
-        {
-            allPlants.getData().remove(allPlants.getData().get(0));
-        }*/
+            for(Genom genes : Genom.existingGenoms.values())
+            {
+                if(genes.getPossessedPawns().size() >= maxPossesed && genes.getPossessedPawns().get(0).getMap()==map)
+                {
+                    maxPossesed = genes.getPossessedPawns().size();
+                    dominatingGenotype = genes.genes;
+                }
+            }
+        }
+        chart.setTitle(Arrays.toString(dominatingGenotype) + " : " + maxPossesed);
+
+
+    }
+
+    public void SetChartTitle(String title)
+    {
+        chart.setTitle(title);
     }
 
     public synchronized void setI(int i) {
